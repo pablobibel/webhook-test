@@ -37,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user, systemHealth, onLogout, 
   const isActiveLink = (path: string) => location.pathname === path;
 
   return (
-    <aside className={`fixed left-0 top-0 h-screen transition-all duration-300 ease-in-out bg-[#0b1221] text-white flex flex-col shadow-2xl z-50 ${isCollapsed ? 'w-20' : 'w-64'}`}>
+    <aside className={`fixed left-0 top-0 h-screen transition-[width] duration-300 ease-in-out bg-[#0b1221] text-white flex flex-col shadow-2xl z-50 will-change-[width] ${isCollapsed ? 'w-20' : 'w-64'}`}>
       
       {/* Botón de colapso con flecha */}
       <button 
