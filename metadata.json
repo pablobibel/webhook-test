@@ -1,0 +1,5 @@
+{
+  "name": "mecha cybersecurity v2",
+  "description": "Professional cybersecurity dashboard with role-based access control, system status monitoring, and integration visualization for n8n and PostgreSQL.",
+  "requestFramePermissions": []
+}
