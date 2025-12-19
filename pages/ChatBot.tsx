@@ -3,11 +3,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Database, Loader2 } from "lucide-react";
 import { ChatMessage } from "../types";
 
-/**
- * Put your n8n webhook URL here:
- * Example: "http://10.10.10.69:5678/webhook/08563812-ddcd-4a96-b977-51c25ca8e82a/chat"
- */
-const N8N_CHAT_WEBHOOK_URL = "http://localhost:5678/webhook/08563812-ddcd-4a96-b977-51c25ca8e82a/chat";
+const N8N_CHAT_WEBHOOK_URL =
+  import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL ??
+  "http://10.10.10.69:5678/webhook/08563812-ddcd-4a96-b977-51c25ca8e82a/chat";
 
 export const ChatBot: React.FC = () => {
   const [input, setInput] = useState("");
@@ -70,8 +68,8 @@ export const ChatBot: React.FC = () => {
     setIsLoading(true);
 
     try {
-      if (!N8N_CHAT_WEBHOOK_URL || N8N_CHAT_WEBHOOK_URL === "http://localhost:5678/webhook/08563812-ddcd-4a96-b977-51c25ca8e82a/chat") {
-        throw new Error("Webhook URL is not set. Replace HERE_WE_GO with your n8n webhook URL.");
+      if (!N8N_CHAT_WEBHOOK_URL) {
+        throw new Error("Webhook URL is not set.");
       }
 
       const sessionId = getSessionId();
@@ -93,8 +91,20 @@ export const ChatBot: React.FC = () => {
         throw new Error(`n8n HTTP ${res.status} ${res.statusText} ${errText ? `- ${errText}` : ""}`);
       }
 
-      const data = await res.json().catch(() => ({}));
-      const replyText = extractReply(data);
+      const rawBody = await res.text();
+      let data = {};
+      if (rawBody) {
+        try {
+          data = JSON.parse(rawBody);
+        } catch (parseError) {
+          console.warn("Unable to parse webhook response as JSON:", parseError);
+        }
+      }
+      const replyFromData = extractReply(data);
+      const replyText =
+        rawBody && replyFromData === "Sin respuesta del workflow."
+          ? rawBody
+          : replyFromData || rawBody || "Sin respuesta del workflow.";
 
       const botMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -106,10 +116,11 @@ export const ChatBot: React.FC = () => {
       setMessages((prev) => [...prev, botMsg]);
     } catch (error) {
       console.error("Error:", error);
+      const details = error instanceof Error ? ` (${error.message})` : "";
       const errorMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: "bot",
-        text: "Error de conexión. Por favor, verifica el estado del servidor (n8n) y el webhook.",
+        text: `Error de conexión. Por favor, verifica el estado del servidor (n8n) y el webhook.${details}`,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMsg]);

@@ -76,14 +76,13 @@ function App() {
     { id: 'VUL-2', cve: 'CVE-2023-38545', title: 'Buffer Overflow en cURL', severity: 'High', description: 'Desbordamiento de búfer basado en pila en la negociación del handshake SOCKS5.', date: '2023-10-11' }
   ]);
 
-
-  // Load user from localStorage
+  // Limpia cualquier sesión persistente en el montaje de la app
   useEffect(() => {
-    const savedUser = localStorage.getItem('mecha_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    try { localStorage.removeItem('mecha_user'); } catch (e) { /* ignore */ }
+    try { sessionStorage.removeItem('mecha_user'); } catch (e) { /* ignore */ }
+    setUser(null);
   }, []);
+
 
   const handleLogin = (role: UserRole) => {
     const mockUser: User = {
@@ -95,12 +94,10 @@ function App() {
       role: role
     };
     setUser(mockUser);
-    localStorage.setItem('mecha_user', JSON.stringify(mockUser));
   };
 
   const handleLogout = () => {
     setUser(null);
-    localStorage.removeItem('mecha_user');
   };
 
   // Protected Route Wrapper
